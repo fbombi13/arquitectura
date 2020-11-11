@@ -1,24 +1,40 @@
-version: '3.3'
+version: '3'
+
 services:
    backend:
-      container_name: backend_django
       build: ./backend
+      command: python manage.py runserver 0.0.0.0:8000
+      volumes:
+        - ./backend/:/usr/src/app/
       ports:
-         - 8002:8000
-      links:
-         - db
-      command: python /code/manage.py runserver
+        - 8000:8000
+      env_file:
+        - ./.env
       depends_on:
-         - db
-   
+        - migration   
+
+   frontend:
+      build: ./frontend
+      ports:
+        - 3000:3000 
+      stdin_open: true 
+
+   migration:
+      build: ./backend
+      command: python manage.py migrate
+      env_file:
+        - ./.env
+      depends_on:
+        - db
+
    db:
-      container_name: db
       image: postgres:12.0-alpine
+      volumes:
+        - postgres_data:/var/lib/postgresql/data/
       environment:
-         - POSTGRES_DB=postgres
-         - POSTGRES_USER=postgres
-         - POSTGRES_PASSWORD=postgres
-     
+        - POSTGRES_USER=hello_django
+        - POSTGRES_PASSWORD=hello_django
+        - POSTGRES_DB=hello_django_dev
 
 volumes:
-   postgres_data:
+ postgres_data:
